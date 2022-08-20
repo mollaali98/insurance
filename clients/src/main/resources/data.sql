@@ -1,0 +1,3 @@
+INSERT INTO roles(id, name) VALUES (1, 'ROLE_CLIENT');
+INSERT INTO roles(id, name) VALUES (2, 'ROLE_INSURANCE');
+INSERT INTO roles(id, name) VALUES (3, 'ROLE_NETWORK_OPERATOR');

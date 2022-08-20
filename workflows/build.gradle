@@ -49,6 +49,8 @@ dependencies {
 
     // CorDapp dependencies.
     cordapp project(":contracts")
+    cordapp("net.corda.bn:business-networks-contracts:$corda_bn_extension_version")
+    cordapp("net.corda.bn:business-networks-workflows:$corda_bn_extension_version")
 }
 
 task integrationTest(type: Test, dependsOn: []) {
