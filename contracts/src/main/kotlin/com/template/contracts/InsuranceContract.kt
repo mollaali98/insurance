@@ -28,6 +28,17 @@ class InsuranceContract : Contract {
         when (command.value) {
             is Commands.IssueInsurance -> verifyIssue(tx)
             is Commands.AddClaim -> verifyAddClaim(tx)
+            is Commands.UpdateClaim -> verifyUpdateClaim(tx)
+        }
+    }
+
+    private fun verifyUpdateClaim(tx: LedgerTransaction) {
+        tx.verifyMembershipsForMedInsuranceTransaction("UpdateClaim")
+        val inputs = tx.inputs
+        val outputs = tx.outputs
+        requireThat {
+            "Transaction must have one input states." using (inputs.isNotEmpty())
+            "Transaction must have one output states." using (outputs.isNotEmpty())
         }
     }
 
@@ -53,6 +64,7 @@ class InsuranceContract : Contract {
     interface Commands : CommandData {
         class IssueInsurance : Commands
         class AddClaim : Commands
+        class UpdateClaim : Commands
     }
 }
 

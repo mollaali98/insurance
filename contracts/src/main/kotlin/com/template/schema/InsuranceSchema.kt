@@ -1,5 +1,6 @@
 package com.template.schema
 
+import com.template.states.ClaimStatus
 import com.template.states.PolicyType
 import com.template.states.PropertyType
 import net.corda.core.schemas.MappedSchema
@@ -40,14 +41,17 @@ object InsuranceSchemaV1 : MappedSchema(
             var claimDescription: String,
 
             @Column(name = "claimAmount")
-            var claimAmount: Int
+            var claimAmount: Double,
+
+            @Column(name = "claimStatus")
+            val claimStatus: ClaimStatus
     ) {
         // Default constructor required by hibernate.
-        constructor(claimNumber: String, claimDescription: String, claimAmount: Int) : this(
-                UUID.randomUUID(), claimNumber, claimDescription, claimAmount
+        constructor(claimNumber: String, claimDescription: String, claimAmount: Double, claimStatus: ClaimStatus) : this(
+                UUID.randomUUID(), claimNumber, claimDescription, claimAmount, claimStatus
         )
 
-        constructor() : this(UUID.randomUUID(), "", "", 0)
+        constructor() : this(UUID.randomUUID(), "", "", 0.0, ClaimStatus.Waiting)
     }
 
     @Entity

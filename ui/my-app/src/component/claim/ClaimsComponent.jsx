@@ -1,12 +1,15 @@
 import React, {useEffect, useState} from 'react'
-import {useParams} from "react-router-dom"
+import {useNavigate, useParams} from "react-router-dom"
 import ClaimService from "../../service/ClaimService"
 import AuthService from "../../service/AuthService";
+import Button from "react-bootstrap/Button";
 
 const ClaimsComponent = () => {
 
     const [claims, setClaims] = useState([])
+    const [showInsuranceBoard, setShowInsuranceBoard] = useState(false)
     const {id} = useParams()
+    const navigate = useNavigate()
 
     useEffect(() => {
         getClaims()
@@ -17,6 +20,7 @@ const ClaimsComponent = () => {
         // ROLE_CLIENT
         // ROLE_INSURANCE
         if (user.roles.includes("ROLE_INSURANCE")) {
+            setShowInsuranceBoard(true)
             ClaimService.getClaimInsurer(id).then((response) => {
                 setClaims(response.data)
                 console.log(response.data)
@@ -29,6 +33,20 @@ const ClaimsComponent = () => {
         }
     }
 
+    const handleApprove = (claimNumber) => {
+        const claimUpdate = {"claimNumber": claimNumber, "policyNumber": id, "claimStatus": "Approved"}
+        console.log("claimUpdate -> " + claimUpdate)
+        ClaimService.updateClaim(claimUpdate)
+        navigate('/insurances')
+    }
+
+    const handleReject = (claimNumber) => {
+        const claimUpdate = {"claimNumber": claimNumber, "policyNumber": id, "claimStatus": "Refuse"}
+        console.log("claimUpdate -> " + claimUpdate)
+        ClaimService.updateClaim(claimUpdate)
+        navigate('/insurances')
+    }
+
     return (
         <div className="container">
             <table className="table table-striped">
@@ -38,6 +56,13 @@ const ClaimsComponent = () => {
                     <th> Number</th>
                     <th> Description</th>
                     <th> Amount</th>
+                    <th> Status</th>
+                    {showInsuranceBoard && (
+                        <>
+                            <th></th>
+                            <th></th>
+                        </>
+                    )}
                 </tr>
                 </thead>
                 <tbody>
@@ -49,6 +74,23 @@ const ClaimsComponent = () => {
                                 <td> {claim.claimNumber}</td>
                                 <td> {claim.claimDescription}</td>
                                 <td> {claim.claimAmount}</td>
+                                <td> {claim.claimStatus}</td>
+                                {(showInsuranceBoard && claim.claimStatus === "Waiting") && (
+                                    <>
+                                        <td>
+                                            <Button size="sm" color="primary"
+                                                    onClick={() => handleApprove(claim.claimNumber)}>
+                                                <p>Approve</p>
+                                            </Button>
+                                        </td>
+                                        <td>
+                                            <Button size="sm" color="primary"
+                                                    onClick={() => handleReject(claim.claimNumber)}>
+                                                <p>Refuse</p>
+                                            </Button>
+                                        </td>
+                                    </>
+                                )}
                             </tr>
                     )
                 }

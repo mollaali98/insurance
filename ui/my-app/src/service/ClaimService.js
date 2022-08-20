@@ -20,10 +20,21 @@ const createClaim = (policyNumber, claim) => {
 const getClaimInsurer = (policyNumber) => axios.get(`${API_GET_INSURER_URL}/${policyNumber}`, {headers: authHeader()})
 const getClaimInsuree = (policyNumber) => axios.get(`${API_GET_INSUREE_URL}/${policyNumber}`, {headers: authHeader()})
 
+const updateClaim = (claim) => {
+    axios.put(API_GET_INSURER_URL, claim, {headers: authHeader()})
+        .then(function (response) {
+            console.log(response);
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+}
+
 const ClaimService = {
     createClaim,
     getClaimInsurer,
-    getClaimInsuree
+    getClaimInsuree,
+    updateClaim
 }
 
 export default ClaimService

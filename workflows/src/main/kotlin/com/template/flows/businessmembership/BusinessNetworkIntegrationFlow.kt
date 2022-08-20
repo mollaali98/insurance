@@ -57,6 +57,13 @@ abstract class BusinessNetworkIntegrationFlow<T> : FlowLogic<T>() {
 
     @Suppress("ComplexMethod", "ThrowsCount")
     @Suspendable
+    protected fun businessNetworkFullVerificationClaimUpdate(networkId: String, policyIssuer: Party, client: Party) {
+        checkInsurerIdentity(networkId, policyIssuer, IssuePermissions.CAN_UPDATE_CLAIM)
+        checkClientIdentity(networkId, client, ReceiverPermissions.CAN_RECEIVE_CLAIM)
+    }
+
+    @Suppress("ComplexMethod", "ThrowsCount")
+    @Suspendable
     private fun checkInsurerIdentity(networkId: String, policyIssuer: Party, issuePermissions: IssuePermissions) {
         val bnService = serviceHub.cordaService(BNService::class.java)
         try {

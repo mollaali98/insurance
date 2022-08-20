@@ -26,7 +26,10 @@ data class InsurerIdentity(val insuranceIdentityCode: String) : BNIdentity {
  * Represents Policy Issuer role which has permission to issue Policy.
  */
 @CordaSerializable
-class PolicyIssuerRole : BNRole("PolicyIssuer", setOf(IssuePermissions.CAN_ISSUE_POLICY, IssuePermissions.CAN_ISSUE_CLAIM))
+class PolicyIssuerRole : BNRole(
+        "PolicyIssuer",
+        setOf(IssuePermissions.CAN_ISSUE_POLICY, IssuePermissions.CAN_ISSUE_CLAIM, IssuePermissions.CAN_UPDATE_CLAIM)
+)
 
 /**
  * PolicyIssuer related permissions which can be given to a role.
@@ -38,7 +41,10 @@ enum class IssuePermissions : BNPermission {
     CAN_ISSUE_POLICY,
 
     /** Enables Business Network member to issue [Claim]s. **/
-    CAN_ISSUE_CLAIM
+    CAN_ISSUE_CLAIM,
+
+    /** Enables Business Network member to issue [Claim]s. **/
+    CAN_UPDATE_CLAIM
 }
 
 /**

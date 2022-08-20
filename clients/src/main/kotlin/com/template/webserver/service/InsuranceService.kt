@@ -2,8 +2,10 @@ package com.template.webserver.service
 
 import com.template.flows.InsuranceClaim
 import com.template.flows.IssueInsurance
+import com.template.flows.UpdateClaim
 import com.template.schema.InsuranceSchemaV1
 import com.template.states.ClaimInfo
+import com.template.states.ClaimUpdate
 import com.template.states.InsuranceInfo
 import com.template.states.InsuranceState
 import com.template.webserver.NodeRPCConnection
@@ -59,6 +61,9 @@ class InsuranceService(
         ).and(QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED))
         return proxyInsurer.vaultQueryByCriteria(criteria, InsuranceState::class.java)
     }
+
+    fun updateClaim(claimUpdate: ClaimUpdate): SignedTransaction =
+            proxyInsurer.startFlow(::UpdateClaim, claimUpdate).returnValue.get()
 }
 
 fun X500Name.toDisplayString(): String = BCStyle.INSTANCE.toString(this)

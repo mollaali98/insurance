@@ -8,7 +8,6 @@ import Container from "react-bootstrap/Container";
 
 const InsuranceComponent = () => {
 
-    const [policyNumber, setPolicyNumber] = useState("")
     const policyTypes = ["Silver", "Gold", "Platinum"]
     const [policyType, setPolicyTypes] = useState(policyTypes[0])
     const [startDate, setStartDate] = useState()
@@ -20,13 +19,29 @@ const InsuranceComponent = () => {
     const [location, setLocation] = useState("")
     const navigate = useNavigate()
 
+    //   - Silver Package BGN 79.09
+    //    - Gold package BGN 104.87
+    //    - Platinum Package BGN 136.05
     useEffect(() => {
-    }, [])
+        switch (policyType) {
+            case 'Silver':
+                setInsuredValue(79.09)
+                break
+            case 'Gold':
+                setInsuredValue(104.87)
+                break
+            case 'Platinum':
+                setInsuredValue(136.05)
+                break
+            default:
+                console.log("Policy type not found -> " + policyType)
+                break
+        }
+    }, [policyType])
 
     const handleSubmit = (e) => {
         e.preventDefault();
         let inputs = {
-            "policyNumber": policyNumber,
             "insuredValue": insuredValue,
             "policyType": policyType,
             "startDate": startDate,
@@ -48,19 +63,6 @@ const InsuranceComponent = () => {
             <Container className="p-5 mb-4 bg-light rounded-3">
                 <Form className="container">
                     <h1 className="text-center"> Create Insurance </h1>
-                    <Form.Group className="mb-3">
-                        <Form.Label>Policy Number</Form.Label>
-                        <Form.Control type="text"
-                                      className="col-md-4"
-                                      placeholder="Enter policy number.."
-                                      onChange={(e) => setPolicyNumber(e.target.value)}/>
-                    </Form.Group>
-
-                    <Form.Group className="mb-3">
-                        <Form.Label>Insured Value</Form.Label>
-                        <Form.Control type="number" placeholder="Enter insured value.." step="0.01"
-                                      onChange={(e) => setInsuredValue(e.target.value)}/>
-                    </Form.Group>
 
                     <Form.Group className="mb-3" controlId="formBasicSelect">
                         <Form.Label>Policy Type</Form.Label>
@@ -78,6 +80,16 @@ const InsuranceComponent = () => {
                                         <option key={index} value={type}>{type}</option>
                                 ))}
                         </Form.Control>
+                        <Form.Text className="text-muted">
+                            * Silver Package BGN 79.09 <br/>
+                            * Gold package BGN 104.87 <br/>
+                            * Platinum Package BGN 136.05 <br/>
+                        </Form.Text>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label>Insured Value</Form.Label>
+                        <Form.Control type="number" value={insuredValue} readOnly disabled/>
                     </Form.Group>
 
                     <Form.Group className="mb-3">

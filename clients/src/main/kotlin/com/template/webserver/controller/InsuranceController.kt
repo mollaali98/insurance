@@ -48,4 +48,14 @@ open class InsuranceController(private val insuranceService: InsuranceService) {
             } catch (e: Exception) {
                 ResponseEntity.badRequest().body(e.message)
             }
+
+    @PutMapping(value = ["/claim"])
+    @PreAuthorize("hasRole('ROLE_INSURANCE')")
+    open fun updateClaim(@RequestBody claimUpdate: ClaimUpdate): ResponseEntity<*> =
+            try {
+                val result = insuranceService.updateClaim(claimUpdate)
+                ResponseEntity.status(HttpStatus.OK).body(result)
+            } catch (e: Exception) {
+                ResponseEntity.badRequest().body(e.message)
+            }
 }

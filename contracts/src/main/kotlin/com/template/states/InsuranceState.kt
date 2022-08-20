@@ -11,6 +11,7 @@ import net.corda.core.schemas.PersistentState
 import net.corda.core.schemas.QueryableState
 import net.corda.core.serialization.CordaSerializable
 import java.time.LocalDate
+import java.util.*
 
 @BelongsToContract(InsuranceContract::class)
 data class InsuranceState(
@@ -35,7 +36,9 @@ data class InsuranceState(
                     persistentClaims += (InsuranceSchemaV1.PersistentClaim(
                             item.claimNumber,
                             item.claimDescription,
-                            item.claimAmount))
+                            item.claimAmount,
+                            item.claimStatus
+                    ))
                 }
             }
 
@@ -69,7 +72,8 @@ data class InsuranceState(
 data class Claim(
         val claimNumber: String,
         val claimDescription: String,
-        val claimAmount: Int
+        val claimAmount: Double,
+        val claimStatus: ClaimStatus = ClaimStatus.Waiting
 )
 
 @CordaSerializable
@@ -90,12 +94,17 @@ enum class PolicyType {
     Silver, Gold, Platinum
 }
 
+@CordaSerializable
+enum class ClaimStatus {
+    Approved, Refuse, Waiting
+}
+
 // DTOs
 @CordaSerializable
 data class InsuranceInfo(
         val owner: String? = null,
         val networkId: String? = null,
-        val policyNumber: String,
+        val policyNumber: String = UUID.randomUUID().toString(),
         val insuredValue: Double,
         val policyType: PolicyType,
         val startDate: LocalDate,
@@ -124,8 +133,22 @@ data class PropertyInfo(
 }
 
 @CordaSerializable
-data class ClaimInfo(val claimNumber: String, val claimDescription: String, val claimAmount: Int) {
-    constructor() : this("", "", 0)
+data class ClaimInfo(
+        val claimNumber: String = UUID.randomUUID().toString(),
+        val claimDescription: String,
+        val claimAmount: Double,
+        val claimStatus: ClaimStatus = ClaimStatus.Waiting
+) {
+    constructor() : this("", "", 0.0, ClaimStatus.Waiting)
+}
+
+@CordaSerializable
+data class ClaimUpdate(
+        val claimNumber: String,
+        val policyNumber: String,
+        val claimStatus: ClaimStatus
+) {
+    constructor() : this("", "", ClaimStatus.Waiting)
 }
 
 fun PropertyInfo.toPropertyData() = PropertyData(address, propertyType, area, location)
@@ -145,9 +168,9 @@ fun InsuranceState.toInsuranceInfo() = InsuranceInfo(
 
 fun List<StateAndRef<InsuranceState>>.toInsuranceInfo() = map { it.state.data.toInsuranceInfo() }
 
-fun ClaimInfo.toClaim() = Claim(claimNumber, claimDescription, claimAmount)
+fun ClaimInfo.toClaim() = Claim(claimNumber, claimDescription, claimAmount, claimStatus)
 
-fun Claim.toClaimInfo() = ClaimInfo(claimNumber, claimDescription, claimAmount)
+fun Claim.toClaimInfo() = ClaimInfo(claimNumber, claimDescription, claimAmount, claimStatus)
 
 @JvmName("toClaimInfoClaim")
 fun List<Claim>.toClaimInfo() = map { it.toClaimInfo() }
