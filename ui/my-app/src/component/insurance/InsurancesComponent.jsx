@@ -8,7 +8,7 @@ import AuthService from "../../service/AuthService";
 const InsurancesComponent = () => {
 
     const [insurances, setInsurances] = useState([])
-    const [showInsurerBoard, setShowInsurerBoard] = useState(false)
+    const [showClientBoard, setShowClientBoard] = useState(false)
 
 
     useEffect(() => {
@@ -17,14 +17,16 @@ const InsurancesComponent = () => {
 
     const getInsurances = () => {
         const user = AuthService.getCurrentUser()
-        if (user.roles.includes("ROLE_INSURER")) {
-            setShowInsurerBoard(true)
-            InsuranceService.getInsurerInsurances().then((response) => {
+        // ROLE_CLIENT
+        // ROLE_INSURANCE
+        if (user.roles.includes("ROLE_INSURANCE")) {
+            InsuranceService.getRoleInsuranceInsurances().then((response) => {
                 setInsurances(response.data)
                 console.log(response.data)
             })
-        } else if (user.roles.includes("ROLE_INSUREE")) {
-            InsuranceService.getInsureeInsurances().then((response) => {
+        } else if (user.roles.includes("ROLE_CLIENT")) {
+            setShowClientBoard(true)
+            InsuranceService.getRoleClientInsurances().then((response) => {
                 setInsurances(response.data)
                 console.log(response.data)
             })
@@ -37,17 +39,17 @@ const InsurancesComponent = () => {
                 <thead>
                 <tr>
                     <th> N</th>
+                    <th> Owner</th>
+                    <th> Network Id</th>
                     <th> Policy Number</th>
                     <th> Insured Value</th>
-                    <th> Duration</th>
-                    <th> Premium</th>
-                    <th> Registration Number</th>
-                    <th> Chasis Number</th>
-                    <th> Make</th>
-                    <th> Model</th>
-                    <th> Variant</th>
-                    <th> Color</th>
-                    <th> Fuel Type</th>
+                    <th> Policy Type</th>
+                    <th> Start Date</th>
+                    <th> End Date</th>
+                    <th> Address</th>
+                    <th> Property Type</th>
+                    <th> Area</th>
+                    <th> Location</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -56,18 +58,18 @@ const InsurancesComponent = () => {
                         (insurance, index) =>
                             <tr key={index}>
                                 <td> {index + 1}</td>
+                                <td> {insurance.owner}</td>
+                                <td> {insurance.networkId}</td>
                                 <td> {insurance.policyNumber}</td>
                                 <td> {insurance.insuredValue}</td>
-                                <td> {insurance.duration}</td>
-                                <td> {insurance.premium}</td>
-                                <td> {insurance.vehicleInfo.registrationNumber}</td>
-                                <td> {insurance.vehicleInfo.chasisNumber}</td>
-                                <td> {insurance.vehicleInfo.make}</td>
-                                <td> {insurance.vehicleInfo.model}</td>
-                                <td> {insurance.vehicleInfo.variant}</td>
-                                <td> {insurance.vehicleInfo.color}</td>
-                                <td> {insurance.vehicleInfo.fuelType}</td>
-                                {showInsurerBoard && (
+                                <td> {insurance.policyType}</td>
+                                <td> {insurance.startDate}</td>
+                                <td> {insurance.endDate}</td>
+                                <td> {insurance.propertyInfo.address}</td>
+                                <td> {insurance.propertyInfo.propertyType}</td>
+                                <td> {insurance.propertyInfo.area}</td>
+                                <td> {insurance.propertyInfo.location}</td>
+                                {showClientBoard && (
                                     <td>
                                         <Link to={"/insurance/" + insurance.policyNumber + "/claim"}>
                                             <Button size="sm" color="primary">

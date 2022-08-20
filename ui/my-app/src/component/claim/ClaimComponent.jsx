@@ -28,28 +28,33 @@ const ClaimComponent = () => {
 
     return (
         <div>
-            <Container>
-                <Form onSubmit={handleSubmit}>
-                    <FormGroup className="mb-3">
-                        <Form.Label>Claim Number</Form.Label>
-                        <Form.Control type="text" name="claimNumber" id="claimNumber" value={claim.claimNumber || ''}
-                                      onChange={handleChange}/>
-                    </FormGroup>
-                    <FormGroup className="mb-3">
-                        <Form.Label>Claim Description</Form.Label>
-                        <Form.Control type="text" name="claimDescription" id="claimDescription"
-                                      value={claim.claimDescription || ''}
-                                      onChange={handleChange}/>
-                    </FormGroup>
-                    <FormGroup className="mb-3">
-                        <Form.Label>Claim Amount</Form.Label>
-                        <Form.Control type="number" name="claimAmount" id="claimAmount" value={claim.claimAmount || ''}
-                                      onChange={handleChange}/>
-                    </FormGroup>
-                    <FormGroup className="mb-3">
-                        <Button color="primary" type="submit">Save</Button>
-                    </FormGroup>
-                </Form>
+            <Container className="p-3">
+                <Container className="p-5 mb-4 bg-light rounded-3">
+                    <h1 className="text-center"> Add Claim </h1>
+                    <Form onSubmit={handleSubmit} className="container">
+                        <FormGroup className="mb-3">
+                            <Form.Label>Claim Number</Form.Label>
+                            <Form.Control type="text" name="claimNumber" id="claimNumber"
+                                          value={claim.claimNumber || ''}
+                                          onChange={handleChange}/>
+                        </FormGroup>
+                        <FormGroup className="mb-3">
+                            <Form.Label>Claim Description</Form.Label>
+                            <Form.Control type="text" name="claimDescription" id="claimDescription"
+                                          value={claim.claimDescription || ''}
+                                          onChange={handleChange}/>
+                        </FormGroup>
+                        <FormGroup className="mb-3">
+                            <Form.Label>Claim Amount</Form.Label>
+                            <Form.Control type="number" name="claimAmount" id="claimAmount"
+                                          value={claim.claimAmount || ''}
+                                          onChange={handleChange}/>
+                        </FormGroup>
+                        <FormGroup className="mb-3">
+                            <Button color="primary" type="submit">Save</Button>
+                        </FormGroup>
+                    </Form>
+                </Container>
             </Container>
         </div>
     )

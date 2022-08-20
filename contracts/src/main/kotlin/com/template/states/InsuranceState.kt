@@ -99,7 +99,7 @@ data class InsuranceInfo(
         val insuredValue: Double,
         val policyType: PolicyType,
         val startDate: LocalDate,
-        val endDate: LocalDate,
+        val endDate: LocalDate = startDate.plusYears(1),
         val propertyInfo: PropertyInfo
 ) {
     constructor() : this(null,

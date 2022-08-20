@@ -6,16 +6,18 @@ import AuthService from "../service/AuthService";
 
 const NavbarComponent = () => {
 
-    const [showInsurerBoard, setShowInsurerBoard] = useState(false)
-    const [showInsureeBoard, setShowInsureeBoard] = useState(false)
+    const [showInsuranceBoard, setShowInsuranceBoard] = useState(false)
+    const [showClientBoard, setShowClientBoard] = useState(false)
     const [currentUser, setCurrentUser] = useState(undefined)
 
     useEffect(() => {
         const user = AuthService.getCurrentUser()
         if (user) {
             setCurrentUser(user)
-            setShowInsurerBoard(user.roles.includes("ROLE_INSURER"))
-            setShowInsureeBoard(user.roles.includes("ROLE_INSUREE"))
+            // ROLE_CLIENT
+            // ROLE_INSURANCE
+            setShowInsuranceBoard(user.roles.includes("ROLE_INSURANCE"))
+            setShowClientBoard(user.roles.includes("ROLE_CLIENT"))
         }
     }, [])
 
@@ -29,17 +31,18 @@ const NavbarComponent = () => {
                 <Nav className="me-auto">
                     <Nav.Link href="/">Home</Nav.Link>
 
-                    {showInsurerBoard && (
+                    {showInsuranceBoard && (
                         <>
-                            <Nav.Link href="/peers">Peers</Nav.Link>
-                            <Nav.Link href="/insurance">Insurance</Nav.Link>
+                            {/*<Nav.Link href="/peers">Peers</Nav.Link>*/}
+                            {/*<Nav.Link href="/insurance">Insurance</Nav.Link>*/}
                             <Nav.Link href="/insurances">Insurances</Nav.Link>
                         </>
                     )}
 
-                    {showInsureeBoard && (
+                    {showClientBoard && (
                         <>
-                            <Nav.Link href="/peers">Peers</Nav.Link>
+                            {/*<Nav.Link href="/peers">Peers</Nav.Link>*/}
+                            <Nav.Link href="/insurance">Insurance</Nav.Link>
                             <Nav.Link href="/insurances">Insurances</Nav.Link>
                         </>
                     )}
@@ -52,7 +55,7 @@ const NavbarComponent = () => {
                     ) : (
                         <>
                             <Nav.Link href="/login">Login</Nav.Link>
-                            <Nav.Link href="/register">Register</Nav.Link>
+                            {/*<Nav.Link href="/register">Register</Nav.Link>*/}
                         </>
                     )}
                 </Nav>

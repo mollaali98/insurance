@@ -13,14 +13,15 @@ const ClaimsComponent = () => {
     }, [])
 
     const getClaims = () => {
-
         const user = AuthService.getCurrentUser()
-        if (user.roles.includes("ROLE_INSURER")) {
+        // ROLE_CLIENT
+        // ROLE_INSURANCE
+        if (user.roles.includes("ROLE_INSURANCE")) {
             ClaimService.getClaimInsurer(id).then((response) => {
                 setClaims(response.data)
                 console.log(response.data)
             })
-        } else if (user.roles.includes("ROLE_INSUREE")) {
+        } else if (user.roles.includes("ROLE_CLIENT")) {
             ClaimService.getClaimInsuree(id).then((response) => {
                 setClaims(response.data)
                 console.log(response.data)

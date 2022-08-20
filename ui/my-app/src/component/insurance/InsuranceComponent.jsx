@@ -3,148 +3,134 @@ import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
 import InsuranceService from "../../service/InsuranceService";
 import {useNavigate} from "react-router-dom";
+import Container from "react-bootstrap/Container";
 
 
 const InsuranceComponent = () => {
 
-    const [vehicleInfo, setVehicleInfo] = useState({})
     const [policyNumber, setPolicyNumber] = useState("")
-    const [insuredValue, setInsuredValue] = useState("")
-    const [duration, setDuration] = useState(0)
-    const [premium, setPremium] = useState("")
-    const [client, setClient] = useState("")
-    const [users, setUsers] = useState([])
+    const policyTypes = ["Silver", "Gold", "Platinum"]
+    const [policyType, setPolicyTypes] = useState(policyTypes[0])
+    const [startDate, setStartDate] = useState()
+    const [insuredValue, setInsuredValue] = useState(0.00)
+    const [address, setAddress] = useState("")
+    const propertyTypes = ["Apartment", "House", "Villa"]
+    const [propertyType, setPropertyType] = useState(propertyTypes[0])
+    const [area, setArea] = useState(0.00)
+    const [location, setLocation] = useState("")
     const navigate = useNavigate()
 
     useEffect(() => {
-        InsuranceService.getInsurees().then((response) => {
-            setUsers(response.data)
-            console.log(response.data)
-        })
     }, [])
-
-    const handleChange = (event) => {
-        const {name, value} = event.target
-        setVehicleInfo({...vehicleInfo, [name]: value})
-    }
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(client)
         let inputs = {
-            "vehicleInfo": vehicleInfo,
             "policyNumber": policyNumber,
             "insuredValue": insuredValue,
-            "duration": duration,
-            "premium": premium
+            "policyType": policyType,
+            "startDate": startDate,
+            "propertyInfo": {
+                "address": address,
+                "propertyType": propertyType,
+                "area": area,
+                "location": location
+            }
         }
         console.log(inputs)
         console.log('You clicked submit.');
-        InsuranceService.createInsurance(client, inputs)
+        InsuranceService.createInsurance(inputs)
         navigate('/insurances')
     }
 
     return (
-        <Form className="container">
+        <Container className="p-3">
+            <Container className="p-5 mb-4 bg-light rounded-3">
+                <Form className="container">
+                    <h1 className="text-center"> Create Insurance </h1>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Policy Number</Form.Label>
+                        <Form.Control type="text"
+                                      className="col-md-4"
+                                      placeholder="Enter policy number.."
+                                      onChange={(e) => setPolicyNumber(e.target.value)}/>
+                    </Form.Group>
 
-            <h1 className="text-center"> Create Insurance </h1>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Insured Value</Form.Label>
+                        <Form.Control type="number" placeholder="Enter insured value.." step="0.01"
+                                      onChange={(e) => setInsuredValue(e.target.value)}/>
+                    </Form.Group>
 
-            <Form.Group className="mb-3" controlId="formBasicSelect">
-                <Form.Label>Select Client</Form.Label>
-                <Form.Control
-                    as="select"
-                    value={client}
-                    onChange={e => {
-                        console.log("e.target.value", e.target.value);
-                        setClient(e.target.value);
-                    }}
-                >
-                    {users && (
-                        users.map(
-                            (user, index) =>
-                                <option key={index} value={user.username}>{user.username}</option>
-                        ))}
-                    {/*<option value="PartyA">PartyA</option>*/}
-                </Form.Control>
-            </Form.Group>
+                    <Form.Group className="mb-3" controlId="formBasicSelect">
+                        <Form.Label>Policy Type</Form.Label>
+                        <Form.Control
+                            as="select"
+                            value={policyType}
+                            onChange={e => {
+                                console.log("e.target.value", e.target.value);
+                                setPolicyTypes(e.target.value);
+                            }}
+                        >
+                            {policyTypes && (
+                                policyTypes.map(
+                                    (type, index) =>
+                                        <option key={index} value={type}>{type}</option>
+                                ))}
+                        </Form.Control>
+                    </Form.Group>
 
-            <Form.Group className="mb-3">
-                <Form.Label>Registration Number</Form.Label>
-                <Form.Control className="registrationNumber" name="registrationNumber" type="text"
-                              placeholder="Enter registration number.."
-                              onChange={handleChange}/>
-            </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Start Date</Form.Label>
+                        <Form.Control type="date"
+                                      placeholder="Enter Start date.."
+                                      onChange={(e) => {
+                                          console.log("e.target.value", e.target.value)
+                                          setStartDate(e.target.value)
+                                      }}/>
+                    </Form.Group>
 
-            <Form.Group className="mb-3">
-                <Form.Label>Chasis Number</Form.Label>
-                <Form.Control className="chasisNumber" name="chasisNumber" type="text"
-                              placeholder="Enter chasis number.."
-                              onChange={handleChange}/>
-            </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Address</Form.Label>
+                        <Form.Control type="text" placeholder="Enter address.."
+                                      onChange={(e) => setAddress(e.target.value)}/>
+                    </Form.Group>
 
-            <Form.Group className="mb-3">
-                <Form.Label>Make</Form.Label>
-                <Form.Control className="make" name="make" type="text"
-                              placeholder="Enter make.."
-                              onChange={handleChange}/>
-            </Form.Group>
+                    <Form.Group className="mb-3" controlId="formBasicSelect">
+                        <Form.Label>Property Type</Form.Label>
+                        <Form.Control
+                            as="select"
+                            value={propertyType}
+                            onChange={e => {
+                                console.log("e.target.value", e.target.value);
+                                setPropertyType(e.target.value);
+                            }}
+                        >
+                            {propertyTypes && (
+                                propertyTypes.map(
+                                    (type, index) =>
+                                        <option key={index} value={type}>{type}</option>
+                                ))}
+                        </Form.Control>
+                    </Form.Group>
 
-            <Form.Group className="mb-3">
-                <Form.Label>Model</Form.Label>
-                <Form.Control className="model" name="model" type="text"
-                              placeholder="Enter model.."
-                              onChange={handleChange}/>
-            </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Area</Form.Label>
+                        <Form.Control type="number" placeholder="Enter area.." step="0.01"
+                                      onChange={(e) => setArea(e.target.value)}/>
+                    </Form.Group>
 
-            <Form.Group className="mb-3">
-                <Form.Label>Variant</Form.Label>
-                <Form.Control className="variant" name="variant" type="text"
-                              placeholder="Enter variant.."
-                              onChange={handleChange}/>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>Color</Form.Label>
-                <Form.Control className="color" name="color" type="text"
-                              placeholder="Enter color.."
-                              onChange={handleChange}/>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>Fuel Type</Form.Label>
-                <Form.Control className="fuelType" name="fuelType" type="text"
-                              placeholder="Enter fuel type.."
-                              onChange={handleChange}/>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>Policy Number</Form.Label>
-                <Form.Control type="text" placeholder="Enter policy number.."
-                              onChange={(e) => setPolicyNumber(e.target.value)}/>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>Insured Value</Form.Label>
-                <Form.Control type="text" placeholder="Enter insured value.."
-                              onChange={(e) => setInsuredValue(e.target.value)}/>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>Duration</Form.Label>
-                <Form.Control type="number" placeholder="Enter duration.."
-                              onChange={(e) => setDuration(e.target.value)}/>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>Premium</Form.Label>
-                <Form.Control type="text" placeholder="Enter premium.."
-                              onChange={(e) => setPremium(e.target.value)}/>
-            </Form.Group>
-
-            <Button variant="primary" onClick={handleSubmit}>
-                Submit
-            </Button>
-        </Form>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Location</Form.Label>
+                        <Form.Control type="text" placeholder="Enter location.."
+                                      onChange={(e) => setLocation(e.target.value)}/>
+                    </Form.Group>
+                    <Button variant="primary" onClick={handleSubmit}>
+                        Submit
+                    </Button>
+                </Form>
+            </Container>
+        </Container>
     )
 }
 

@@ -2,9 +2,9 @@ import axios from "axios";
 import authHeader from "./AuthHeader";
 
 
-const API_BASE_URL = 'http://localhost:8080/insurer/vehicleInsurance/claim'
-const API_GET_INSURER_URL = 'http://localhost:8080/insurer/vehicleInsurance/claim'
-const API_GET_INSUREE_URL = 'http://localhost:8080/insuree/vehicleInsurance/claim'
+const API_BASE_URL = 'http://localhost:8080/client/insurance/claim'
+const API_GET_INSURER_URL = 'http://localhost:8080/insurance/claim'
+const API_GET_INSUREE_URL = 'http://localhost:8080/client/insurance/claim'
 
 
 const createClaim = (policyNumber, claim) => {
