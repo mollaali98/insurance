@@ -26,7 +26,7 @@ data class InsurerIdentity(val insuranceIdentityCode: String) : BNIdentity {
  * Represents Policy Issuer role which has permission to issue Policy.
  */
 @CordaSerializable
-class PolicyIssuerRole : BNRole("PolicyIssuer", setOf(IssuePermissions.CAN_ISSUE_POLICY))
+class PolicyIssuerRole : BNRole("PolicyIssuer", setOf(IssuePermissions.CAN_ISSUE_POLICY, IssuePermissions.CAN_ISSUE_CLAIM))
 
 /**
  * PolicyIssuer related permissions which can be given to a role.
@@ -35,7 +35,10 @@ class PolicyIssuerRole : BNRole("PolicyIssuer", setOf(IssuePermissions.CAN_ISSUE
 enum class IssuePermissions : BNPermission {
 
     /** Enables Business Network member to issue [InsuranceState]s. **/
-    CAN_ISSUE_POLICY
+    CAN_ISSUE_POLICY,
+
+    /** Enables Business Network member to issue [Claim]s. **/
+    CAN_ISSUE_CLAIM
 }
 
 /**
@@ -58,7 +61,7 @@ data class ClientIdentity(val cic: String) : BNIdentity {
  * Represents Policy Receiver role which has permission to receive Policy.
  */
 @CordaSerializable
-class PolicyReceiverRole : BNRole("PolicyReceiver", setOf(ReceiverPermissions.CAN_RECEIVE_POLICY))
+class PolicyReceiverRole : BNRole("PolicyReceiver", setOf(ReceiverPermissions.CAN_RECEIVE_POLICY, ReceiverPermissions.CAN_RECEIVE_CLAIM))
 
 /**
  * PolicyReceiver related permissions which can be given to a role.
@@ -66,7 +69,10 @@ class PolicyReceiverRole : BNRole("PolicyReceiver", setOf(ReceiverPermissions.CA
 @CordaSerializable
 enum class ReceiverPermissions : BNPermission {
     /** Enables Business Network member to receive [InsuranceState]s. **/
-    CAN_RECEIVE_POLICY
+    CAN_RECEIVE_POLICY,
+
+    /** Enables Business Network member to receive [Claim]s. **/
+    CAN_RECEIVE_CLAIM
 }
 
 @CordaSerializable

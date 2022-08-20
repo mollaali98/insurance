@@ -25,12 +25,9 @@ class InsuranceContract : Contract {
     override fun verify(tx: LedgerTransaction) {
         // Verification logic goes here.
         val command = tx.commands.requireSingleCommand<Commands>()
-        val inputs = tx.inputs
         when (command.value) {
             is Commands.IssueInsurance -> verifyIssue(tx)
-            is Commands.AddClaim -> requireThat {
-                "Insurance transaction must have input states, the insurance police" using (inputs.isNotEmpty())
-            }
+            is Commands.AddClaim -> verifyAddClaim(tx)
         }
     }
 
@@ -39,6 +36,16 @@ class InsuranceContract : Contract {
         val inputs = tx.inputs
         requireThat {
             "Transaction must have no input states." using (inputs.isEmpty())
+        }
+    }
+
+    private fun verifyAddClaim(tx: LedgerTransaction) {
+        tx.verifyMembershipsForMedInsuranceTransaction("AddClaim")
+        val inputs = tx.inputs
+        val outputs = tx.outputs
+        requireThat {
+            "Transaction must have one input states." using (inputs.isNotEmpty())
+            "Transaction must have one output states." using (outputs.isNotEmpty())
         }
     }
 

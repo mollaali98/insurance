@@ -44,10 +44,21 @@ abstract class BusinessNetworkIntegrationFlow<T> : FlowLogic<T>() {
     @Suppress("ComplexMethod", "ThrowsCount")
     @Suspendable
     protected fun businessNetworkFullVerification(networkId: String, policyIssuer: Party, client: Party) {
-        val bnService = serviceHub.cordaService(BNService::class.java)
+        checkInsurerIdentity(networkId, policyIssuer, IssuePermissions.CAN_ISSUE_POLICY)
+        checkClientIdentity(networkId, client, ReceiverPermissions.CAN_RECEIVE_POLICY)
+    }
 
-        // we put this in try catch block since lender is the caller of Business Network Service methods and those throw
-        // [IllegalStateException] whenever the caller is not member of the Business Network.
+    @Suppress("ComplexMethod", "ThrowsCount")
+    @Suspendable
+    protected fun businessNetworkFullVerificationClaim(networkId: String, policyIssuer: Party, client: Party) {
+        checkInsurerIdentity(networkId, policyIssuer, IssuePermissions.CAN_ISSUE_CLAIM)
+        checkClientIdentity(networkId, client, ReceiverPermissions.CAN_RECEIVE_CLAIM)
+    }
+
+    @Suppress("ComplexMethod", "ThrowsCount")
+    @Suspendable
+    private fun checkInsurerIdentity(networkId: String, policyIssuer: Party, issuePermissions: IssuePermissions) {
+        val bnService = serviceHub.cordaService(BNService::class.java)
         try {
             bnService.getMembership(networkId, policyIssuer)?.state?.data?.apply {
                 if (!isActive()) {
@@ -56,14 +67,19 @@ abstract class BusinessNetworkIntegrationFlow<T> : FlowLogic<T>() {
                 if (identity.businessIdentity !is InsurerIdentity) {
                     throw IllegalMembershipBusinessIdentityException("$policyIssuer business identity should be InsurerIdentity")
                 }
-                if (roles.find { IssuePermissions.CAN_ISSUE_POLICY in it.permissions } == null) {
+                if (roles.find { issuePermissions in it.permissions } == null) {
                     throw MembershipAuthorisationException("$policyIssuer is not authorised to issue insurance Policy in Business Network with $networkId ID")
                 }
             } ?: throw MembershipNotFoundException("$policyIssuer is not member of Business Network with $networkId ID")
         } catch (e: IllegalStateException) {
             throw MembershipNotFoundException("$policyIssuer is not member of Business Network with $networkId ID")
         }
+    }
 
+    @Suppress("ComplexMethod", "ThrowsCount")
+    @Suspendable
+    private fun checkClientIdentity(networkId: String, client: Party, receiverPermissions: ReceiverPermissions) {
+        val bnService = serviceHub.cordaService(BNService::class.java)
         bnService.getMembership(networkId, client)?.state?.data?.apply {
             if (!isActive()) {
                 throw IllegalMembershipStatusException("$client is not active member of Business Network with $networkId ID")
@@ -71,7 +87,7 @@ abstract class BusinessNetworkIntegrationFlow<T> : FlowLogic<T>() {
             if (identity.businessIdentity !is ClientIdentity) {
                 throw IllegalMembershipBusinessIdentityException("$client business identity should be ClientIdentity")
             }
-            if (roles.find { ReceiverPermissions.CAN_RECEIVE_POLICY in it.permissions } == null) {
+            if (roles.find { receiverPermissions in it.permissions } == null) {
                 throw MembershipAuthorisationException("$client is not authorised to receive insurance Policy in Business Network with $networkId ID")
             }
         } ?: throw MembershipNotFoundException("$client is not member of Business Network with $networkId ID")

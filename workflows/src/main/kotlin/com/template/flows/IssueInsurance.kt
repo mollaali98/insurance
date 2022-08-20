@@ -11,35 +11,35 @@ import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
+import net.corda.core.utilities.unwrap
 
-// *********
-// * Flows *
-// *********
+// Run on Client Node
 @InitiatingFlow
 @StartableByRPC
 class IssueInsurance(
         val insuranceInfo: InsuranceInfo,
         val networkId: String,
-        val client: Party
+        val policyIssuer: Party
 ) : BusinessNetworkIntegrationFlow<SignedTransaction>() {
     override val progressTracker = ProgressTracker()
 
     @Suspendable
     override fun call(): SignedTransaction {
-
-        businessNetworkFullVerification(networkId, ourIdentity, client)
+        businessNetworkFullVerification(networkId, policyIssuer, ourIdentity)
         // Obtain a reference from a notary we wish to use.
         val notary = serviceHub.networkMapCache.getNotary(CordaX500Name.parse("O=Notary,L=London,C=GB")) // METHOD 2
+        val client = ourIdentity
 
-        val policyIssuer = ourIdentity
+        // Initiate flow
+        val session: FlowSession = initiateFlow(policyIssuer)
+        val output: InsuranceState = try {
+            session.sendAndReceive(InsuranceState::class.java, insuranceInfo to networkId).unwrap { it -> it }
+        } catch (e: Exception) {
+            logger.info("Unable to create Insurance", e)
+            error("Unable to create Insurance")
+        }
 
-        val propertyInfo: PropertyInfo = insuranceInfo.propertyInfo
-        val property = propertyInfo.toPropertyData()
-
-        // Build the insurance output state.
-        val output = insuranceInfo.toInsuranceState(networkId, policyIssuer, client, property)
-
-        val (policyIssuerMembership, clientMembership) = businessNetworkPartialVerification(networkId, ourIdentity, client)
+        val (policyIssuerMembership, clientMembership) = businessNetworkPartialVerification(networkId, policyIssuer, client)
 
         // Build the transaction
         val txBuilder = TransactionBuilder(notary)
@@ -54,19 +54,27 @@ class IssueInsurance(
         val stx = serviceHub.signInitialTransaction(txBuilder)
 
         // Call finality Flow
-        val ownerSession = initiateFlow(client)
-        val fullySignedTx = subFlow(CollectSignaturesFlow(stx, setOf(ownerSession)))
-
-        return subFlow(FinalityFlow(fullySignedTx, setOf(ownerSession)))
+        val fullySignedTx = subFlow(CollectSignaturesFlow(stx, setOf(session)))
+        return subFlow(FinalityFlow(fullySignedTx, setOf(session)))
     }
 }
 
+// Run on Insurance Node
 @InitiatedBy(IssueInsurance::class)
-class IssueInsuranceResponder(val counterpartySession: FlowSession) : FlowLogic<SignedTransaction>() {
+class IssueInsuranceResponder(val counterpartySession: FlowSession) : BusinessNetworkIntegrationFlow<SignedTransaction>() {
     @Suspendable
     override fun call(): SignedTransaction {
+
+        val (insuranceInfo, networkId) = counterpartySession.receive<Pair<InsuranceInfo, String>>().unwrap { it -> it }
+        businessNetworkFullVerification(networkId, ourIdentity, counterpartySession.counterparty)
+        val propertyInfo: PropertyInfo = insuranceInfo.propertyInfo
+        val property = propertyInfo.toPropertyData()
+
+        // Build the insurance output state.
+        val output = insuranceInfo.toInsuranceState(networkId, ourIdentity, counterpartySession.counterparty, property)
+        counterpartySession.send(output)
+
         subFlow(object : SignTransactionFlow(counterpartySession) {
-            @Throws(FlowException::class)
             override fun checkTransaction(stx: SignedTransaction) {
             }
         })
