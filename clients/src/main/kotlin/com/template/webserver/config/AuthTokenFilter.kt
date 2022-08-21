@@ -17,6 +17,9 @@ import javax.servlet.http.HttpServletResponse
 
 class AuthTokenFilter : OncePerRequestFilter() {
 
+    companion object {
+        val loggerFilter: Logger = LoggerFactory.getLogger(AuthTokenFilter::class.java)
+    }
     @Autowired
     lateinit var jwtUtils: JwtUtils
 
@@ -35,7 +38,7 @@ class AuthTokenFilter : OncePerRequestFilter() {
                 SecurityContextHolder.getContext().authentication = authentication
             }
         } catch (e: Exception) {
-            logger.error("Cannot set user authentication: {}", e)
+            loggerFilter.error("Cannot set user authentication: {}", e)
         }
         filterChain.doFilter(request, response)
     }
@@ -49,9 +52,5 @@ class AuthTokenFilter : OncePerRequestFilter() {
         return if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
             headerAuth.substring(7, headerAuth.length)
         } else null
-    }
-
-    companion object {
-        private val logger: Logger = LoggerFactory.getLogger(AuthTokenFilter::class.java)
     }
 }
