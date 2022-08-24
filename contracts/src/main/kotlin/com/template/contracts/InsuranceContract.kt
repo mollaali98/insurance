@@ -1,14 +1,12 @@
 package com.template.contracts
 
+import com.template.states.ClaimStatus
 import com.template.states.ClientIdentity
 import com.template.states.InsuranceState
 import com.template.states.InsurerIdentity
 import net.corda.bn.states.MembershipState
-import net.corda.core.contracts.CommandData
-import net.corda.core.contracts.Contract
-import net.corda.core.contracts.requireSingleCommand
+import net.corda.core.contracts.*
 import net.corda.core.transactions.LedgerTransaction
-import net.corda.core.contracts.requireThat
 import net.corda.core.identity.Party
 
 // ************
@@ -26,37 +24,66 @@ class InsuranceContract : Contract {
         // Verification logic goes here.
         val command = tx.commands.requireSingleCommand<Commands>()
         when (command.value) {
-            is Commands.IssueInsurance -> verifyIssue(tx)
-            is Commands.AddClaim -> verifyAddClaim(tx)
-            is Commands.UpdateClaim -> verifyUpdateClaim(tx)
+            is Commands.IssueInsurance -> verifyIssue(tx, command)
+            is Commands.AddClaim -> verifyAddClaim(tx, command)
+            is Commands.UpdateClaim -> verifyUpdateClaim(tx, (command.value as Commands.UpdateClaim).claimNumber, command)
         }
     }
 
-    private fun verifyUpdateClaim(tx: LedgerTransaction) {
+    private fun verifyUpdateClaim(tx: LedgerTransaction, claimNumber: String, command: CommandWithParties<Commands>) {
         tx.verifyMembershipsForMedInsuranceTransaction("UpdateClaim")
-        val inputs = tx.inputs
-        val outputs = tx.outputs
+        val input = tx.requireSingleInputOfType<InsuranceState>()
+        val output = tx.requireSingleOutputOfType<InsuranceState>()
         requireThat {
-            "Transaction must have one input states." using (inputs.isNotEmpty())
-            "Transaction must have one output states." using (outputs.isNotEmpty())
+            "The networkId should be same".using(input.networkId == output.networkId)
+            "The owner should be same" using (input.owner == output.owner)
+            "The policyNumber should be same" using (input.policyNumber == output.policyNumber)
+            "The insuredValue should be same" using (input.insuredValue == output.insuredValue)
+            "The policyType should be same" using (input.policyType == output.policyType)
+            "The startDate should be same".using(input.startDate == output.startDate)
+            "The endDate should be same".using(input.endDate == output.endDate)
+            (input.claims + output.claims).groupBy { it.claimNumber }.forEach { (id, claims) ->
+                val first = claims[0]
+                if (first.claimStatus != ClaimStatus.Waiting) {
+                    val second = claims[1]
+                    if (claimNumber == id) {
+                        "The status should be different".using(first.claimStatus != second.claimStatus)
+                    } else {
+                        "The claimAmount should be same".using(first.claimAmount == second.claimAmount)
+                        "The claimDescription should be same".using(first.claimDescription == second.claimDescription)
+                    }
+                }
+            }
+            "All of the participants must be signers." using (command.signers.containsAll(output.participants.map { it.owningKey }))
         }
     }
 
-    private fun verifyIssue(tx: LedgerTransaction) {
+    private fun verifyIssue(tx: LedgerTransaction, command: CommandWithParties<Commands>) {
         tx.verifyMembershipsForMedInsuranceTransaction("Issue")
-        val inputs = tx.inputs
+        tx.requireZeroInputsOfType<InsuranceState>()
+        val output = tx.requireSingleOutputOfType<InsuranceState>()
         requireThat {
-            "Transaction must have no input states." using (inputs.isEmpty())
+            "The startDate and endDate should be different".using(output.startDate != output.endDate)
+            "The insuredValue should be bigger than zero".using(output.insuredValue > 0)
+            "The startDate and endDate should be different".using(output.startDate != output.endDate)
+            "The claims should be empty".using(output.claims.isEmpty())
         }
     }
 
-    private fun verifyAddClaim(tx: LedgerTransaction) {
+    private fun verifyAddClaim(tx: LedgerTransaction, command: CommandWithParties<Commands>) {
         tx.verifyMembershipsForMedInsuranceTransaction("AddClaim")
-        val inputs = tx.inputs
-        val outputs = tx.outputs
+        val input = tx.requireSingleInputOfType<InsuranceState>()
+        val output = tx.requireSingleOutputOfType<InsuranceState>()
         requireThat {
-            "Transaction must have one input states." using (inputs.isNotEmpty())
-            "Transaction must have one output states." using (outputs.isNotEmpty())
+            "The networkId should be same".using(input.networkId == output.networkId)
+            "The owner should be same" using (input.owner == output.owner)
+            "The policyNumber should be same" using (input.policyNumber == output.policyNumber)
+            "The insuredValue should be same" using (input.insuredValue == output.insuredValue)
+            "The policyType should be same" using (input.policyType == output.policyType)
+            "The startDate should be same".using(input.startDate == output.startDate)
+            "The endDate should be same".using(input.endDate == output.endDate)
+            "Claims should be increased in the output".using(input.claims.size < output.claims.size)
+            "All of the participants must be signers." using (command.signers.containsAll(output.participants.map { it.owningKey }))
         }
     }
 
@@ -64,7 +91,7 @@ class InsuranceContract : Contract {
     interface Commands : CommandData {
         class IssueInsurance : Commands
         class AddClaim : Commands
-        class UpdateClaim : Commands
+        class UpdateClaim(val claimNumber: String) : Commands
     }
 }
 
@@ -73,15 +100,9 @@ class InsuranceContract : Contract {
  * Make sure the participants are in the correct [Network], and has the correct [CustomIdentityType]
  *
  */
-private fun LedgerTransaction.verifyMembershipsForMedInsuranceTransaction(
-        commandName: String
-) = requireThat {
-
-    val output = if (outputStates.isNotEmpty()) outputs.single() else null
-    val outputState = output?.data as? InsuranceState
-
-
-    val networkId: String = outputState!!.networkId
+private fun LedgerTransaction.verifyMembershipsForMedInsuranceTransaction(commandName: String) = requireThat {
+    val outputState = requireSingleOutputOfType<InsuranceState>()
+    val networkId: String = outputState.networkId
     val insurance: Party = outputState.insurance
     val client: Party = outputState.client
 
@@ -111,3 +132,25 @@ private fun LedgerTransaction.verifyMembershipsForMedInsuranceTransaction(
         "client should have business identity of FirmIdentity type" using (identity.businessIdentity is ClientIdentity)
     }
 }
+
+inline fun <reified T : ContractState> LedgerTransaction.requireZeroInputsOfType() =
+        require(inputsOfType<T>().isEmpty()) { "No ${T::class.simpleName} state should be consumed" }
+
+inline fun <reified T : ContractState> LedgerTransaction.requireSingleInputOfType() =
+        requireNotNull(inputsOfType<T>().singleOrNull()) { "Single ${T::class.simpleName} input state is required" }
+
+inline fun <reified T : ContractState> LedgerTransaction.requireSingleOutputOfType() =
+        requireNotNull(outputsOfType<T>().singleOrNull()) { "Single ${T::class.simpleName} output state is required" }
+
+inline fun <reified T : ContractState> LedgerTransaction.requireSingleReferenceOfType() =
+        requireNotNull(referenceInputsOfType<T>().singleOrNull()) { "Single ${T::class.simpleName} reference state is required" }
+
+inline fun <reified T : ContractState> LedgerTransaction.requireReferencesOfType(): List<T> =
+        referenceInputsOfType<T>().also { refs ->
+            require(refs.isNotEmpty()) { "Reference inputs of type ${T::class.simpleName} are required" }
+        }
+
+inline fun <reified T : ContractState> LedgerTransaction.requireZeroReferencesOfType(): List<T> =
+        referenceInputsOfType<T>().also { refs ->
+            require(refs.isEmpty()) { "Reference inputs of type ${T::class.simpleName} should not be provided" }
+        }

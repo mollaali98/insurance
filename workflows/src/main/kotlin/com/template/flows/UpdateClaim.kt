@@ -38,7 +38,7 @@ class UpdateClaim(
         val txBuilder = TransactionBuilder(inputStateAndRef.state.notary)
                 .addInputState(inputStateAndRef)
                 .addOutputState(output)
-                .addCommand(InsuranceContract.Commands.UpdateClaim(), listOf(client.owningKey, insurance.owningKey))
+                .addCommand(InsuranceContract.Commands.UpdateClaim(claimNumber = updateClaim.claimNumber), listOf(client.owningKey, insurance.owningKey))
                 .addReferenceState(ReferencedStateAndRef(policyIssuerMembership))
                 .addReferenceState(ReferencedStateAndRef(clientMembership))
         // Verify the transaction

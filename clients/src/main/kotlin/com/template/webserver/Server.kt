@@ -28,6 +28,7 @@ import kotlin.coroutines.experimental.buildIterator
 @EnableJpaRepositories("com.template.webserver.repository")
 private open class Starter
 
+
 @Component
 class Init(
         private val businessNetworkService: BusinessNetworkService,

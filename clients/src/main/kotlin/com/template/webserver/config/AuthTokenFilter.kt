@@ -40,11 +40,16 @@ class AuthTokenFilter : OncePerRequestFilter() {
         } catch (e: Exception) {
             loggerFilter.error("Cannot set user authentication: {}", e)
         }
-        filterChain.doFilter(request, response)
+        try {
+            filterChain.doFilter(request, response)
+        }catch (e: IncompatibleClassChangeError){
+            e.printStackTrace()
+            loggerFilter.error(e.message)
+        }
     }
 
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
-        return listOf("/api/auth/signup", "/api/auth/signin").any { it == request.servletPath }
+        return listOf("/api/auth/signup", "/api/auth/signin", "/swagger-ui.html#/").any { it == request.servletPath }
     }
 
     private fun parseJwt(request: HttpServletRequest): String? {

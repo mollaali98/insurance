@@ -66,11 +66,21 @@ open class WebSecurityConfig(
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests().antMatchers("/api/auth/**").permitAll()
+                .and().authorizeRequests().antMatchers("/swagger-ui.html#/").permitAll()
                 .anyRequest().authenticated()
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter::class.java)
     }
 
     override fun configure(web: WebSecurity) {
-        web.ignoring().antMatchers("/api/auth/signup")
+        web.ignoring()
+                .antMatchers("/api/auth/signup", "/swagger-ui.html#/")
+                .antMatchers(
+                        "/v2/api-docs",
+                        "/configuration/ui",
+                        "/swagger-resources/**",
+                        "/configuration/security",
+                        "/swagger-ui.html",
+                        "/webjars/**"
+                );
     }
 }
