@@ -110,3 +110,10 @@ Now to see our membership states, we can run these vault queries.
 run vaultQuery contractStateType: net.corda.core.contracts.ContractState
 run vaultQuery contractStateType: net.corda.bn.states.MembershipState
 ```
+
+### This is architecture scheme of the Corda Business Network
+![alt text](NetworkSetUp.png)
+
+
+### This is architecture scheme of the Insurance
+![alt text](Insurance.png)
