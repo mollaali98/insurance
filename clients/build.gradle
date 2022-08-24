@@ -9,20 +9,48 @@ sourceSets {
 }
 
 dependencies {
+
     // Corda dependencies.
     compile "$corda_release_group:corda-rpc:$corda_release_version"
 
     // CorDapp dependencies.
     compile project(":contracts")
     compile project(":workflows")
-    compile("org.springframework.boot:spring-boot-starter-websocket:$spring_boot_version") {
+    implementation("org.springframework.boot:spring-boot-starter-websocket:$spring_boot_version") {
         exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
     }
     compile "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
     compile "org.apache.logging.log4j:log4j-web:${log4j_version}"
     compile "org.slf4j:jul-to-slf4j:$slf4j_version"
+
+    implementation ('org.springframework.boot:spring-boot-starter-security:2.6.1' ){
+        exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+        exclude group: "org.springframework.boot", module: "spring-boot-starter"
+    }
+    implementation ("org.springframework.boot:spring-boot-starter-data-jpa:2.7.2" ){
+        exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+        exclude group: "org.springframework.boot", module: "spring-boot-starter"
+
+    }
+
+    implementation "io.jsonwebtoken:jjwt:0.9.1"
+    runtimeOnly "com.h2database:h2:1.4.200"
+
+    implementation "com.fasterxml.jackson.core:jackson-core:2.12.1"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.12.1"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.12.1"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.7"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.7"
+    implementation "io.springfox:springfox-swagger2:2.9.2"
+    implementation "io.springfox:springfox-swagger-ui:2.9.2"
 }
 
+
+//configurations {
+//    all {
+//        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+//    }
+//}
 
 springBoot {
     mainClassName = "com.template.webserver.ServerKt"
@@ -44,5 +72,5 @@ task runTemplateClient(type: JavaExec, dependsOn: assemble) {
 task runTemplateServer(type: JavaExec, dependsOn: assemble) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'com.template.webserver.ServerKt'
-    args '--server.port=10050', '--config.rpc.host=localhost', '--config.rpc.port=10006', '--config.rpc.username=user1', '--config.rpc.password=test'
+//    args '--server.port=10050', '--config.rpc.host=localhost', '--config.rpc.port=10006', '--config.rpc.username=user1', '--config.rpc.password=test'
 }

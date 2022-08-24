@@ -1,0 +1,39 @@
+corda-rpc:
+  networkOperator:
+    host: localhost
+    port: 10006
+    username: user1
+    password: test
+  insurance:
+    host: localhost
+    port: 10009
+    username: user1
+    password: test
+  client:
+    host: localhost
+    port: 10012
+    username: user1
+    password: test
+
+spring:
+
+  h2:
+    console.enabled: true
+  liquibase:
+    enabled: true
+    change-log: classpath:db/databaseChangelog.xml
+
+  datasource:
+    url: jdbc:h2:mem:mydb
+    username: sa
+    password: password
+    driverClassName: org.h2.Driver
+  jpa:
+    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+
+#  spring.jpa.properties.hibernate.dialect= org.hibernate.dialect.MySQL5InnoDBDialect
+#  spring.jpa.hibernate.ddl-auto= update
+# App Properties
+app:
+  jwtSecret: bezKoderSecretKey
+  jwtExpirationMs: 86400000
